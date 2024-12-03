@@ -97,7 +97,6 @@ Creating a plot to display OR data
 ```{r}
 ggplot(allcity_ORresults, aes(x = reorder(city_state, OR), y = OR, ymin = CI_lower, ymax = CI_upper)) +
   geom_pointrange() +
-  coord_flip() + 
   labs(
     title = "Estimated Odds Ratios for Solving Homicides: Male vs Female Victims",
     x = "City, State",
@@ -107,9 +106,13 @@ ggplot(allcity_ORresults, aes(x = reorder(city_state, OR), y = OR, ymin = CI_low
   theme_minimal() +
   theme(
     axis.text.y = element_text(size = 8),  
-    axis.title = element_text(size = 10)
+    axis.title = element_text(size = 10),  
+    axis.text.x = element_text(size = 7, angle = 45, hjust = 1)  
   )
 ```
+
+## Problem 3
+
 
 
 
