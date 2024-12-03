@@ -70,3 +70,26 @@ baltimore_OR <- broom::tidy(baltimore_reg) |>
 
 baltimore_OR
 ```
+
+
+```{r}
+allcity_ORresults <- homicide_df |>
+  nest(data = -city_state) |>
+  mutate(
+    model = map(data, ~ glm(solved ~ victim_age + victim_sex + victim_race, data = .x, family = binomial())), 
+    tidy_model = map(model, broom::tidy)
+  ) |>
+  select(-model, -data) |>
+  unnest(cols = tidy_model) |>
+  mutate(
+    OR = exp(estimate), 
+    CI_upper = exp(estimate + 1.96 * std.error),  
+    CI_lower = exp(estimate - 1.96 * std.error)   
+  ) |>
+  filter(term == "victim_sexMale") |>
+  select(city_state, OR, CI_upper, CI_lower)
+
+allcity_ORresults |>
+  knitr::kable(digits = 4)
+```
+```
