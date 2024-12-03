@@ -71,7 +71,7 @@ baltimore_OR <- broom::tidy(baltimore_reg) |>
 baltimore_OR
 ```
 
-
+Calculating ORs for each city listed 
 ```{r}
 allcity_ORresults <- homicide_df |>
   nest(data = -city_state) |>
@@ -92,4 +92,24 @@ allcity_ORresults <- homicide_df |>
 allcity_ORresults |>
   knitr::kable(digits = 4)
 ```
+
+Creating a plot to display OR data
+```{r}
+ggplot(allcity_ORresults, aes(x = reorder(city_state, OR), y = OR, ymin = CI_lower, ymax = CI_upper)) +
+  geom_pointrange() +
+  coord_flip() + 
+  labs(
+    title = "Estimated Odds Ratios for Solving Homicides: Male vs Female Victims",
+    x = "City, State",
+    y = "Odds Ratio (OR)",
+    caption = "Whiskers represent 95% confidence intervals"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 8),  
+    axis.title = element_text(size = 10)
+  )
 ```
+
+
+
