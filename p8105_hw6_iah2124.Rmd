@@ -82,9 +82,6 @@ cat("95% Confidence Interval for r^2: [", ci_r_squared[1], ", ", ci_r_squared[2]
 cat("95% Confidence Interval for log(β0 * β1): [", ci_log_beta_prod[1], ", ", ci_log_beta_prod[2], "]\n")
 ```
 
-
-
-
 ## Problem 2
 Load data and filter out city states and races unneeded 
 ```{r}
@@ -179,6 +176,18 @@ ggplot(allcity_ORresults, aes(x = reorder(city_state, OR), y = OR, ymin = CI_low
 ```
 
 ## Problem 3
+Loading and cleaning birthweight data
+```{r}
+birthweight_df = read_csv("birthweight.csv") |> 
+  mutate(babysex = as.factor(babysex),
+         frace = as.factor(frace),
+         malform = as.factor(malform),
+         mrace = as.factor(mrace)
+         )
+
+view(birthweight_df)
+```
+
 
 
 
