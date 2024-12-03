@@ -1,0 +1,44 @@
+---
+title: "p8105_hw6_iah2124"
+author: "Iris Hart"
+date: "2024-12-02"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+library(broom)
+library(ggplot2)
+library(rnoaa)
+library(tidyr)
+```
+
+## Problem 1
+
+
+## Problem 2
+Load data and filter out city states and races unneeded 
+```{r}
+homicide_df <- read_csv("homicide-data.csv") |>
+
+  mutate(city_state = paste(city, state, sep = ",")) |>  
+
+  filter(!(city_state %in% c("Dallas,TX", "Phoenix,AZ", "Kansas City,MO", "Tulsa,AL"))) |> 
+
+  mutate(
+    solved = case_when(
+      disposition == "Closed without arrest" ~ 0,
+      disposition == "Open/No arrest" ~ 0, 
+      disposition == "Closed by arrest" ~ 1,
+      TRUE ~ NA_real_  # Assign NA for other dispositions
+    )
+  ) |> 
+
+  filter(victim_race %in% c("White", "Black")) |>  
+
+  mutate(
+    victim_age = as.numeric(victim_age)  
+  )
+```
