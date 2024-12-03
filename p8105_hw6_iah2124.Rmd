@@ -32,6 +32,14 @@ weather_df =
   select(name, id, everything())
 ```
 
+Set up the bootstrapping process
+```{r}
+set.seed(123)  
+
+n_bootstrap <- 5000
+```
+
+
 
 
 
