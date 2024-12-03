@@ -13,6 +13,7 @@ library(broom)
 library(ggplot2)
 library(rnoaa)
 library(tidyr)
+library(modelr)
 ```
 
 ## Problem 1
@@ -67,12 +68,17 @@ ggplot(bootstrap_df, aes(x = r_squared)) +
   geom_density(fill = "skyblue", alpha = 0.5) +
   labs(title = "Distribution of Bootstrap Estimates for r^2", x = "r^2", y = "Density")
 ```
+The ditribution of r_squared is approximately normally distributed with a 95% confidence interval of 0.8945701 ,  0.9271042. 
+
 Plot the distribution of log(β0 * β1)
 ```{r}
 ggplot(bootstrap_df, aes(x = log_beta_prod)) +
   geom_density(fill = "lightgreen", alpha = 0.5) +
   labs(title = "Distribution of Bootstrap Estimates for log(β0 * β1)", x = "log(β0 * β1)", y = "Density")
 ```
+The distribution of log(β0 * β1) is approximately normally distributed with a 95% confidence interval of 1.964166 ,  2.058364. 
+
+
 Calculate 95% Confidence Intervals
 ```{r}
 ci_r_squared <- quantile(bootstrap_df$r_squared, c(0.025, 0.975))
@@ -93,7 +99,7 @@ homicide_df <- read_csv("homicide-data.csv") |>
 
   mutate(
     solved = case_when(
-      disposition == "Closed without arrest" ~ 0,
+      disposition == "Closed without arrest" ~ 1,
       disposition == "Open/No arrest" ~ 0, 
       disposition == "Closed by arrest" ~ 1,
       TRUE ~ NA_real_  
@@ -126,8 +132,8 @@ baltimore_reg <- glm(
 baltimore_OR <- broom::tidy(baltimore_reg) |>
   mutate(
     OR = exp(estimate), 
-    CI_upper = exp(estimate + 1.96 * std.error),  # Upper bound of CI
-    CI_lower = exp(estimate - 1.96 * std.error)   # Lower bound of CI
+    CI_upper = exp(estimate + 1.96 * std.error),  
+    CI_lower = exp(estimate - 1.96 * std.error)   
   ) |>
   filter(term == "victim_sexMale") |>
   select(OR, CI_lower, CI_upper)  
@@ -174,6 +180,7 @@ ggplot(allcity_ORresults, aes(x = reorder(city_state, OR), y = OR, ymin = CI_low
     axis.text.x = element_text(size = 7, angle = 45, hjust = 1)  
   )
 ```
+The estimated odds ratios for solving homicides for male vs. female victims is typically less than 1 for most cities. This indicates that more male victims are less likely compared to female victims to have a resolved homicide case. However, in Stockton, CA, Minneapolis, MN, and Fresno, CA, male victims are more likely to have a resolved homicide case than females. 
 
 ## Problem 3
 Loading and cleaning birthweight data
@@ -188,7 +195,80 @@ birthweight_df = read_csv("birthweight.csv") |>
 view(birthweight_df)
 ```
 
+View the data in a visual layout
+```{r}
+ggplot(birthweight_df, aes(x = bwt, y = blength)) + 
+  geom_point(color = "coral") +   
+  theme_minimal()
+```
 
 
+Propose the hypothetical fit model 
+```{r}
+hypotheticalrg_model <- lm(bwt ~ blength + bhead + babysex + gaweeks + delwt + fincome + 
+                            smoken + wtgain + momage + mheight + parity, data = birthweight_df)
 
+birthweight_df_with_preds_resids <- birthweight_df |>
+  add_predictions(hypotheticalrg_model) |>  
+  add_residuals(hypotheticalrg_model) |>     
+  ggplot(aes(x = pred, y = resid)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", color = "lightgreen") +  
+  theme_minimal() +
+  labs(x = "Fitted Values", y = "Residuals", 
+       title = "Residuals vs Fitted Values for Birthweight Model")
+  
+birthweight_df_with_preds_resids
+
+```
+### Model explanation ###
+
+Fit the three models
+```{r}
+model1 <- lm(bwt ~ blength + bhead + babysex + gaweeks + delwt + fincome + 
+              smoken + wtgain + momage + mheight + parity, data = birthweight_df)
+
+model2 <- lm(bwt ~ blength + gaweeks, data = birthweight_df)
+
+model3 <- lm(bwt ~ bhead * blength * babysex, data = birthweight_df)
+
+# Compare AIC of each model
+model_comparison <- tibble(
+  Model = c("Model 1 (Full)", "Model 2 (Main Effects Only)", "Model 3 (Interactions)"),
+  AIC = c(AIC(model1), AIC(model2), AIC(model3)),
+  R_squared = c(summary(model1)$r.squared, summary(model2)$r.squared, summary(model3)$r.squared)
+)
+
+# Print the model comparison table
+print(model_comparison)
+
+# Residual plots for each model
+model1_resids <- add_predictions(birthweight_df, model1) %>%
+  add_residuals(model1)
+
+model2_resids <- add_predictions(birthweight_df, model2) %>%
+  add_residuals(model2)
+
+model3_resids <- add_predictions(birthweight_df, model3) %>%
+  add_residuals(model3)
+
+# Plot residuals for each model
+ggplot(model1_resids, aes(x = pred, y = resid)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "lightgreen") +
+  labs(title = "Residuals vs Fitted for Model 1 (Full Model)", x = "Fitted Values", y = "Residuals") +
+  theme_minimal()
+
+ggplot(model2_resids, aes(x = pred, y = resid)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "tomato") +
+  labs(title = "Residuals vs Fitted for Model 2 (Main Effects Only)", x = "Fitted Values", y = "Residuals") +
+  theme_minimal()
+
+ggplot(model3_resids, aes(x = pred, y = resid)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "orchid") +
+  labs(title = "Residuals vs Fitted for Model 3 (Interactions)", x = "Fitted Values", y = "Residuals") +
+  theme_minimal()
+```
 
