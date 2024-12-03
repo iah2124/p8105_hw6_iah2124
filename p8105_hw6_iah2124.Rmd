@@ -215,7 +215,11 @@ birthweight_df |>
   geom_point() + 
   geom_smooth(method = "lm", color = "lightgreen") + 
   theme_minimal() +
-  labs(x = "Fitted Values", y = "Residuals")
+  labs(
+    title = "Residuals vs Fitted Values for Birthweight Model(full model)", 
+    x = "Fitted Values", 
+    y = "Residuals"
+  )
 
 ```
 ### Model explanation ###
@@ -231,7 +235,10 @@ birthweight_df |>
   geom_point() + 
   geom_smooth(method = "lm", color = "tomato") + 
   theme_minimal() +
-  labs(x = "Fitted Values", y = "Residuals")
+  labs(
+      title = "Residuals vs Fitted Values for Birthweight Model(main effects)", 
+      x = "Fitted Values", y = "Residuals"
+      )
 ```
 Interaction fitted model
 ```{r}
@@ -245,7 +252,10 @@ birthweight_df |>
   geom_point() + 
   geom_smooth(method = "lm", color = "orchid") + 
   theme_minimal() +
-  labs(x = "Fitted Values", y = "Residuals")
+  labs(
+    title = "Residuals vs Fitted Values for Birthweight Model(interaction)", 
+      x = "Fitted Values", y = "Residuals"
+      )
 ```
 
 Making comparisons between models
@@ -271,4 +281,19 @@ cv_res_df <- cv_df |>
   )
 ```
 
-Plotting comparisons 
+Plotting comparisons - Villon plot 
+```{r}
+cv_res_df |> 
+  select(starts_with("rmse")) |> 
+  pivot_longer(
+    everything(),
+    names_to = "model", 
+    values_to = "rmse",
+    names_prefix = "rmse_"
+  ) |> 
+  ggplot(aes(x = model, y = rmse)) + 
+  geom_violin() + 
+  theme_minimal() +
+  labs(x = "Model", y = "RMSE")
+```
+The hypothetical model has a low RMSE and is pretty evenly distributed, making it a great model to use. The interaction model also has a low RMSE, but there is less even distribution in this model, meaning it would be a good but not great model. The main effect model has a much higher RMSE and is not very evenly distributed, making it a poor model to use. 
